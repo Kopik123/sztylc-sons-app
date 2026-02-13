@@ -1,0 +1,77 @@
+project: Sztylc & Son’s
+region: Lancashire
+milestones:
+- name: MVP Core
+  tasks:
+  - id: MVP-1
+    title: Auth + roles
+    owner: backend
+    priority: P0
+  - id: MVP-2
+    title: Jobs + assignments
+    owner: backend
+    priority: P0
+  - id: MVP-3
+    title: Shifts submit + approvals
+    owner: backend
+    priority: P0
+  - id: MVP-4
+    title: Weekly payroll summary
+    owner: backend
+    priority: P0
+  - id: MVP-5
+    title: Calendar week + my-week
+    owner: backend
+    priority: P0
+  - id: MVP-6
+    title: React Login + protected routes
+    owner: frontend
+    priority: P0
+  - id: MVP-7
+    title: Worker Shift Form
+    owner: frontend
+    priority: P0
+  - id: MVP-8
+    title: Manager Pending Shifts
+    owner: frontend
+    priority: P0
+  - id: MVP-9
+    title: Manager Calendar Week View
+    owner: frontend
+    priority: P0
+  - id: MVP-10
+    title: Worker My Week view
+    owner: frontend
+    priority: P0
+- name: Photos Evidence
+  tasks:
+  - id: PH-1
+    title: Photo upload endpoint + storage
+    owner: backend
+    priority: P0
+  - id: PH-2
+    title: Worker upload UI + captions
+    owner: frontend
+    priority: P0
+  - id: PH-3
+    title: Manager job gallery
+    owner: frontend
+    priority: P1
+- name: Go Live
+  tasks:
+  - id: DEP-1
+    title: VPS + Nginx + SSL
+    owner: ops
+    priority: P0
+  - id: DEP-2
+    title: Deploy backend (Laravel)
+    owner: ops
+    priority: P0
+  - id: DEP-3
+    title: Deploy frontend build
+    owner: ops
+    priority: P0
+  - id: DEP-4
+    title: Backups + logs
+    owner: ops
+    priority: P1
