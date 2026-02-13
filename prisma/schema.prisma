@@ -1,0 +1,163 @@
+// Sztylc & Sons Application Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  WORKER
+  MANAGER
+}
+
+enum JobStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ShiftStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          UserRole  @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  quoteRequests QuoteRequest[]
+  jobsCreated   Job[]         @relation("CreatedByManager")
+  assignments   Assignment[]
+  shifts        ShiftSubmission[]
+  approvals     ShiftSubmission[] @relation("ApprovedByManager")
+  payrolls      Payroll[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model QuoteRequest {
+  id          String   @id @default(cuid())
+  clientId    String
+  title       String
+  description String   @db.Text
+  location    String?
+  contactInfo String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  client      User     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  jobs        Job[]
+
+  @@index([clientId])
+  @@index([status])
+}
+
+model Job {
+  id             String    @id @default(cuid())
+  quoteRequestId String?
+  managerId      String
+  title          String
+  description    String    @db.Text
+  location       String
+  status         JobStatus @default(PENDING)
+  startDate      DateTime?
+  endDate        DateTime?
+  estimatedHours Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  quoteRequest   QuoteRequest? @relation(fields: [quoteRequestId], references: [id], onDelete: SetNull)
+  manager        User          @relation("CreatedByManager", fields: [managerId], references: [id], onDelete: Cascade)
+  assignments    Assignment[]
+
+  @@index([managerId])
+  @@index([status])
+  @@index([startDate])
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  jobId       String
+  workerId    String
+  weekStart   DateTime
+  weekEnd     DateTime
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  worker      User     @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  shifts      ShiftSubmission[]
+
+  @@index([jobId])
+  @@index([workerId])
+  @@index([weekStart])
+  @@unique([jobId, workerId, weekStart])
+}
+
+model ShiftSubmission {
+  id           String      @id @default(cuid())
+  assignmentId String
+  workerId     String
+  date         DateTime
+  hoursWorked  Float
+  photoUrls    String[]
+  notes        String?     @db.Text
+  status       ShiftStatus @default(SUBMITTED)
+  approvedById String?
+  approvedAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  assignment   Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  worker       User        @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  approvedBy   User?       @relation("ApprovedByManager", fields: [approvedById], references: [id], onDelete: SetNull)
+  payroll      Payroll?
+
+  @@index([assignmentId])
+  @@index([workerId])
+  @@index([date])
+  @@index([status])
+}
+
+model Payroll {
+  id              String   @id @default(cuid())
+  shiftId         String   @unique
+  workerId        String
+  weekStart       DateTime
+  weekEnd         DateTime
+  hoursWorked     Float
+  fullDayRate     Float
+  totalAmount     Float
+  calculatedAt    DateTime @default(now())
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  shift           ShiftSubmission @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  worker          User            @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId])
+  @@index([weekStart])
+  @@index([paidAt])
+}
